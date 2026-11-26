@@ -44,6 +44,8 @@
   .offers s { color: var(--muted); font-size: 12px; font-weight: 400; margin-right: 6px; }
   .tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; background: var(--line); color: var(--muted); font-weight: 400; }
   .soldout { opacity: .55; }
+  .extra { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
+  .extra.coupon { color: var(--ok); }
   .empty { color: var(--muted); text-align: center; padding: 40px 0; }
   footer { margin-top: 30px; color: var(--muted); font-size: 12px; }
 </style>
@@ -65,7 +67,7 @@
   </div>
   <ul id="list"></ul>
 
-  <footer>가격은 각 쇼핑몰 검색 결과 기준이며 실제 가격과 다를 수 있습니다. 구매 전 쇼핑몰에서 확인하세요.</footer>
+  <footer>가격은 각 쇼핑몰 검색 결과 기준이며 실제 가격과 다를 수 있습니다. 쿠폰·적립금은 회원가입·구매 조건이 있을 수 있으니 구매 전 쇼핑몰에서 확인하세요.</footer>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
@@ -80,6 +82,7 @@ function render() {
     .map((s) => `<span class="chip ${s.ok ? '' : 'bad'}">${esc(s.shop)} ${s.ok ? s.count : '연결 실패'}</span>`)
     .join(' ');
   $('bar').hidden = false;
+  const benefits = Object.fromEntries(last.status.map((s) => [s.shopId, s.benefits || []]));
   const groups = last.groups
     .map((g) => ({ ...g, offers: g.offers.filter((o) => !(hide && (o.soldOut || !o.price))) }))
     .filter((g) => g.offers.length);
@@ -101,7 +104,10 @@ function render() {
           ${g.offers.map((o) => `
             <li class="${o.soldOut || !o.price ? 'soldout' : ''} ${o.price && o.price === g.lowest && !o.soldOut ? 'best' : ''}">
               <a href="${esc(o.url)}" target="_blank" rel="noopener">
-                <span class="shop">${esc(o.shop)}${o.soldOut ? '<span class="tag out">품절</span>' : ''}</span>
+                <span class="shop">${esc(o.shop)}${o.soldOut ? '<span class="tag out">품절</span>' : ''}
+                  ${o.points ? `<span class="extra">적립 ${won(o.points)}${o.pointsNote ? ` (${esc(o.pointsNote)})` : ''}</span>` : ''}
+                  ${(benefits[o.shopId] || []).map((b) => `<span class="extra coupon">🎟 ${esc(b)}</span>`).join('')}
+                </span>
                 <span class="p">${o.listPrice ? `<s>${won(o.listPrice)}</s>` : ''}${o.price ? won(o.price) : esc(o.priceNote)}</span>
               </a>
             </li>`).join('')}
