@@ -1,0 +1,6 @@
+{
+  "name": "miniature-price-compare",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "node server.js" }
+}
